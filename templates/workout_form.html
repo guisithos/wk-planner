@@ -1,0 +1,39 @@
+{{define "content"}}
+<div class="workout-form">
+    <h2>New Workout</h2>
+    <form action="/workout/save" method="POST">
+        <div class="form-group">
+            <label for="sport_type">Sport Type:</label>
+            <select name="sport_type" id="sport_type" required>
+                <option value="Running">Running</option>
+                <option value="Cycling">Cycling</option>
+                <option value="Swimming">Swimming</option>
+                <option value="Walking">Walking</option>
+                <option value="Gym">Gym</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="date">Date:</label>
+            <input type="date" name="date" id="date" required>
+        </div>
+
+        <div class="form-group">
+            <label for="duration">Duration (minutes):</label>
+            <input type="number" name="duration" id="duration" min="1" required>
+        </div>
+
+        <div class="form-group">
+            <label for="distance">Distance (km):</label>
+            <input type="number" name="distance" id="distance" step="0.01" min="0">
+        </div>
+
+        <div class="form-group">
+            <label for="notes">Notes:</label>
+            <textarea name="notes" id="notes" rows="3"></textarea>
+        </div>
+
+        <button type="submit" class="btn">Save Workout</button>
+    </form>
+</div>
+{{end}} 

@@ -1,0 +1,33 @@
+{{define "content"}}
+<div class="calendar">
+    <div class="calendar-header">
+        <h2>{{.Month.Format "January 2006"}}</h2>
+    </div>
+    
+    <div class="workouts-list">
+        {{range .Workouts}}
+        <div class="workout-card {{if .IsCompleted}}completed{{end}}">
+            <div class="workout-header">
+                <h3>{{.SportType}}</h3>
+                <span class="date">{{.Date.Format "Jan 02, 2006"}}</span>
+            </div>
+            <div class="workout-details">
+                <p>Duration: {{.Duration}} minutes</p>
+                <p>Distance: {{.Distance}} km</p>
+                {{if .Notes}}
+                <p class="notes">{{.Notes}}</p>
+                {{end}}
+            </div>
+            <form action="/workout/toggle" method="POST" class="toggle-form">
+                <input type="hidden" name="id" value="{{.ID}}">
+                <button type="submit" class="btn-toggle">
+                    {{if .IsCompleted}}Mark Incomplete{{else}}Mark Complete{{end}}
+                </button>
+            </form>
+        </div>
+        {{else}}
+        <p class="no-workouts">No workouts planned for this month.</p>
+        {{end}}
+    </div>
+</div>
+{{end}} 
