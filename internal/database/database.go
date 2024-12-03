@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/guisithos/workout-planner/internal/models"
+	"github.com/guisithos/wk-planner/internal/models"
 )
 
 // WorkoutStore handles all database operations for workouts

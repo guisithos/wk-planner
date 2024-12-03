@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/guisithos/workout-planner/internal/database"
-	"github.com/guisithos/workout-planner/internal/models"
+	"github.com/guisithos/wk-planner/internal/database"
+	"github.com/guisithos/wk-planner/internal/models"
 )
 
 type Handler struct {
