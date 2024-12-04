@@ -2,23 +2,14 @@ package main
 
 import (
 	"database/sql"
+	"html/template"
 	"log"
 	"net/http"
-	"time"
 
+	"github.com/guisithos/wk-planner/internal/database"
+	"github.com/guisithos/wk-planner/internal/handlers"
 	_ "github.com/mattn/go-sqlite3"
 )
-
-// Workout represents a workout plan entry
-type Workout struct {
-	ID          int64
-	SportType   string
-	Duration    int     // in minutes
-	Distance    float64 // in kilometers
-	Date        time.Time
-	IsCompleted bool
-	Notes       string
-}
 
 func main() {
 	// Initialize database
@@ -31,6 +22,13 @@ func main() {
 	// Create tables if they don't exist
 	initDB(db)
 
+	// Load templates
+	tmpl := template.Must(template.ParseGlob("templates/*.html"))
+
+	// Initialize handlers
+	store := database.NewWorkoutStore(db)
+	handler := handlers.NewHandler(store, tmpl)
+
 	// Initialize handlers
 	mux := http.NewServeMux()
 
@@ -39,10 +37,10 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// Register routes
-	mux.HandleFunc("/", handleHome)
-	mux.HandleFunc("/workout/new", handleNewWorkout)
-	mux.HandleFunc("/workout/save", handleSaveWorkout)
-	mux.HandleFunc("/workout/toggle", handleToggleWorkout)
+	mux.HandleFunc("/", handler.HandleHome)
+	mux.HandleFunc("/workout/new", handler.HandleNewWorkout)
+	mux.HandleFunc("/workout/save", handler.HandleSaveWorkout)
+	mux.HandleFunc("/workout/toggle", handler.HandleToggleWorkout)
 
 	// Start server
 	log.Println("Server starting on http://localhost:8080")
