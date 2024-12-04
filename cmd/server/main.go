@@ -22,8 +22,12 @@ func main() {
 	// Create tables if they don't exist
 	initDB(db)
 
-	// Load templates
-	tmpl := template.Must(template.ParseGlob("templates/*.html"))
+	// Load templates with debug logging
+	tmpl, err := template.ParseGlob("templates/*.html")
+	if err != nil {
+		log.Fatalf("Failed to parse templates: %v", err)
+	}
+	log.Printf("Loaded templates: %v", tmpl.DefinedTemplates())
 
 	// Initialize handlers
 	store := database.NewWorkoutStore(db)

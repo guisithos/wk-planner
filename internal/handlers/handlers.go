@@ -22,6 +22,13 @@ func NewHandler(store *database.WorkoutStore, templates *template.Template) *Han
 	}
 }
 
+// CalendarDay represents a single day in the calendar view
+type CalendarDay struct {
+	Date     time.Time
+	Workouts []models.Workout
+	IsToday  bool
+}
+
 // HandleHome displays the main calendar view
 func (h *Handler) HandleHome(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
@@ -29,27 +36,69 @@ func (h *Handler) HandleHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get the current month's start and end dates
 	now := time.Now()
-	startDate := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.Local)
-	endDate := startDate.AddDate(0, 1, -1)
+	year := now.Year()
+	month := now.Month()
 
-	workouts, err := h.store.GetWorkouts(startDate, endDate)
+	// Get the first day of the month and the total days
+	firstDay := time.Date(year, month, 1, 0, 0, 0, 0, time.Local)
+	lastDay := firstDay.AddDate(0, 1, -1)
+
+	// Get all workouts for the month
+	workouts, err := h.store.GetWorkouts(firstDay, lastDay)
 	if err != nil {
 		http.Error(w, "Failed to fetch workouts", http.StatusInternalServerError)
 		return
 	}
 
-	data := struct {
-		Workouts []models.Workout
-		Month    time.Time
-	}{
-		Workouts: workouts,
-		Month:    startDate,
+	// Create calendar grid
+	var calendar [][]CalendarDay
+
+	// Get the day of week for the first day (0 = Sunday, 1 = Monday, etc.)
+	firstDayWeekday := int(firstDay.Weekday())
+
+	// Create calendar weeks
+	currentDay := firstDay.AddDate(0, 0, -firstDayWeekday) // Start from the first Sunday
+	for week := 0; week < 6; week++ {                      // Maximum 6 weeks in a month
+		var weekDays []CalendarDay
+		for day := 0; day < 7; day++ {
+			// Create calendar day
+			calDay := CalendarDay{
+				Date:    currentDay,
+				IsToday: currentDay.Year() == now.Year() && currentDay.Month() == now.Month() && currentDay.Day() == now.Day(),
+			}
+
+			// Add workouts for this day
+			for _, w := range workouts {
+				if w.Date.Year() == currentDay.Year() &&
+					w.Date.Month() == currentDay.Month() &&
+					w.Date.Day() == currentDay.Day() {
+					calDay.Workouts = append(calDay.Workouts, w)
+				}
+			}
+
+			weekDays = append(weekDays, calDay)
+			currentDay = currentDay.AddDate(0, 0, 1)
+		}
+		calendar = append(calendar, weekDays)
+
+		// Break if we've gone past the end of the month
+		if currentDay.Month() != month && week >= 4 {
+			break
+		}
 	}
 
-	if err := h.tmpl.ExecuteTemplate(w, "layout.html", data); err != nil {
+	data := struct {
+		Calendar [][]CalendarDay
+		Month    time.Time
+	}{
+		Calendar: calendar,
+		Month:    firstDay,
+	}
+
+	if err := h.tmpl.ExecuteTemplate(w, "layout", data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 

@@ -1,32 +1,36 @@
+{{template "layout" .}}
 {{define "content"}}
-<div class="calendar">
+<div class="calendar-container">
     <div class="calendar-header">
         <h2>{{.Month.Format "January 2006"}}</h2>
     </div>
     
-    <div class="workouts-list">
-        {{range .Workouts}}
-        <div class="workout-card {{if .IsCompleted}}completed{{end}}">
-            <div class="workout-header">
-                <h3>{{.SportType}}</h3>
-                <span class="date">{{.Date.Format "Jan 02, 2006"}}</span>
-            </div>
-            <div class="workout-details">
-                <p>Duration: {{.Duration}} minutes</p>
-                <p>Distance: {{.Distance}} km</p>
-                {{if .Notes}}
-                <p class="notes">{{.Notes}}</p>
-                {{end}}
-            </div>
-            <form action="/workout/toggle" method="POST" class="toggle-form">
-                <input type="hidden" name="id" value="{{.ID}}">
-                <button type="submit" class="btn-toggle">
-                    {{if .IsCompleted}}Mark Incomplete{{else}}Mark Complete{{end}}
-                </button>
-            </form>
+    <div class="calendar-grid">
+        <div class="calendar-weekdays">
+            <div class="weekday">Sun</div>
+            <div class="weekday">Mon</div>
+            <div class="weekday">Tue</div>
+            <div class="weekday">Wed</div>
+            <div class="weekday">Thu</div>
+            <div class="weekday">Fri</div>
+            <div class="weekday">Sat</div>
         </div>
-        {{else}}
-        <p class="no-workouts">No workouts planned for this month.</p>
+
+        {{range .Calendar}}
+        <div class="calendar-week">
+            {{range .}}
+            <div class="calendar-day {{if not (eq .Date.Month $.Month.Month)}}other-month{{end}} {{if .IsToday}}today{{end}}">
+                <div class="day-header">{{.Date.Day}}</div>
+                <div class="day-content">
+                    {{range .Workouts}}
+                    <div class="workout-pill {{if .IsCompleted}}completed{{end}}" title="{{.SportType}} - {{.Duration}}min">
+                        <span class="sport-type">{{.SportType}}</span>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+        </div>
         {{end}}
     </div>
 </div>
